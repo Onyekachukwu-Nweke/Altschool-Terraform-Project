@@ -33,3 +33,8 @@ variable "server_info" {
     key_name      = ""
   }
 }
+
+variable "inbound_ports" {
+  type    = list(number)
+  default = [80, 443, 22]
+}
