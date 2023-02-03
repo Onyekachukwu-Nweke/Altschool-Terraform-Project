@@ -1,0 +1,6 @@
+---
+app_user: "ubuntu"
+http_host: "onyekachukwunweke.me"
+http_conf: "tosin.conf"
+http_port: "80"
+disable_default: true

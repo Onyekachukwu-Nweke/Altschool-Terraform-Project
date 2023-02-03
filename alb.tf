@@ -3,12 +3,9 @@ resource "aws_alb" "new_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.elb-sg.id]
-  #subnets = [aws_subnet.custom_subnet[count.index].id]
-  #subnets = [aws_subnet.custom_subnet.id]
-  #subnets = aws_subnet.custom_subnet[count.index]
   subnets = aws_subnet.az.*.id
-
 }
+
 resource "aws_alb_target_group" "tg" {
   name     = "TargetGroup"
   port     = 80
@@ -38,7 +35,7 @@ resource "aws_alb_listener" "new_listener" {
 }
 
 resource "aws_alb_target_group_attachment" "tg_attachment" {
-  count            = length(var.public_subnet_cidrs)
+  count = length(aws_instance.new_instance)
   target_group_arn = aws_alb_target_group.tg.arn
   target_id        = aws_instance.new_instance[count.index].id
   port             = 80

@@ -1,6 +1,6 @@
 resource "aws_security_group" "elb-sg" {
   name   = "elb-sg"
-  vpc_id = aws_vpc.custom_vpc.id
+  vpc_id = aws_vpc.main.id
 
 
   ingress {

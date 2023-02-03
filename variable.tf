@@ -44,3 +44,7 @@ variable "provision_instance" {
   default     = true
   description = "Flag to control whether to run the Ansible playbook on the instance"
 }
+
+variable "private_key_path" {
+  default = ""
+}
