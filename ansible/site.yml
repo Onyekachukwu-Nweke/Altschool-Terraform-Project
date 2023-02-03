@@ -1,0 +1,55 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    # - name: Install prerequisites
+    # apt: name={{ item }} state=latest force_apt_get=yes update_cache=yes
+    # loop: [ 'aptitude' ]
+
+    #Apache configurations
+    - name: Install Lamp Packages
+      apt: name={{ item }} state=latest force_apt_get=yes update_cache=yes
+      loop:
+        ["apache2", "php", "php-mysql", "libapache2-mod-php", "python3-pymysql"]
+
+      #Create Document root file
+    - name: Create Document root
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: 0755
+
+    - name: setup Apache vhost
+      template:
+        src: "files/apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+      notify: Reload Apache
+
+    - name: Enable Apache site
+      shell: /usr/sbin/a2ensite {{ http_conf }}
+      notify: Reload Apache
+
+    - name: Disable Apache default site
+      shell: /usr/sbin/a2dissite 000-default.conf
+      when: disable_default
+      notify: Restart Apache
+
+    - name: Create php info file
+      copy:
+        src: files/app
+        dest: /var/www/{{ http_host }}/
+        owner: "{{ app_user }}"
+        mode: 0755
+
+  handlers:
+    - name: Reload Apache
+      service: name=apache2
+        state=reloaded
+
+    - name: Restart Apache
+      service: name=apache2
+        state=restarted
