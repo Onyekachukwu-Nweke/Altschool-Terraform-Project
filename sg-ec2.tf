@@ -3,7 +3,7 @@ resource "aws_security_group" "altschool_sg" {
   description = "Allow TLS inbound traffic"
 
   dynamic "ingress" {
-    for_each = local.inbound_ports
+    for_each = var.inbound_ports
     content {
       from_port   = ingress.value
       to_port     = ingress.value

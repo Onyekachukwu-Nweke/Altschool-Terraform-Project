@@ -38,3 +38,9 @@ variable "inbound_ports" {
   type    = list(number)
   default = [80, 443, 22]
 }
+
+variable "provision_instance" {
+  type        = bool
+  default     = true
+  description = "Flag to control whether to run the Ansible playbook on the instance"
+}

@@ -23,3 +23,33 @@ resource "aws_autoscaling_group" "ec2-asg" {
     propagate_at_launch = true
   }
 }
+
+
+resource "null_resource" "provision_instance" {
+  count = length(var.public_subnet_cidrs)
+
+  #depends_on = [
+  # aws_instance.new_instance,
+  #]
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'ssh connected'"
+    ]
+    connection {
+      type        = "ssh"
+      host        = aws_instance.new_instance[count.index].public_ip
+      user        = "ubuntu"
+      private_key = file("~/terraform-assignment/ass-key.cer")
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "echo ${aws_instance.new_instance[count.index].public_ip} >> inventory && ansible-playbook -i inventory --private-key ${var.private_key_path} site.yml"
+
+
+    #"ansible-playbook -i ${aws_instance.new_instance[count.index].public_ip}, --private-key ${var.private_key_path} site.yml"
+
+    #"echo ${aws_instance.new_instance[count.index].public_ip} >> inventory && ansible-playbook -i #inventory site.yml"
+    #only    = var.provision_instance == true
+  }
+}
