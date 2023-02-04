@@ -5,10 +5,6 @@
     - vars/default.yml
 
   tasks:
-    # - name: Install prerequisites
-    # apt: name={{ item }} state=latest force_apt_get=yes update_cache=yes
-    # loop: [ 'aptitude' ]
-
     #Apache configurations
     - name: Install Lamp Packages
       apt: name={{ item }} state=latest force_apt_get=yes update_cache=yes
@@ -44,6 +40,18 @@
         dest: /var/www/{{ http_host }}/
         owner: "{{ app_user }}"
         mode: 0755
+
+    - name: Set timezone to Africa/Lagos
+      date_time:
+        timezone: Africa/Lagos
+        state: link
+      register: result
+    - name: Check timezone
+      command: timedatectl status
+      register: time_status
+    - name: Display timezone
+      debug:
+        var: time_status.stdout_lines
 
   handlers:
     - name: Reload Apache
