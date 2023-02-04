@@ -37,16 +37,20 @@ resource "aws_autoscaling_group" "ec2-asg" {
 
   tag {
     key                 = "Name"
-    value               = "ec2-${1}"
+    value               = "ec2-instance"
     propagate_at_launch = true
   }
+}
+
+locals {
+  instances = flatten([for instance in data.aws_instances.ec2_instances : instance if instance != null])
 }
 
 data "template_file" "inventory_file" {
   template = "{{ range $i, $instance := .Instances -}}{{ $instance.PublicIP }} ansible_host={{ $instance.PublicIP }} ansible_user=ubuntu\n{{- end }}"
 
   vars = {
-    Instances = [for instance in data.aws_instances.ec2_instances: instance.public_ip if instance.public_ip != null]
+    Instances = jsonencode(local.instances)
   }
 }
 

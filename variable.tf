@@ -61,5 +61,5 @@ variable "provision_instance" {
 }
 
 variable "private_key_path" {
-  default = "~/.ssh/altschool-1.pem"
+  default = "altschool-1.pem"
 }
