@@ -1,14 +1,8 @@
 
-resource "aws_instance" "new_instance" {
-  count  = aws_autoscaling_group.ec2-asg.desired_capacity
-  ami = var.server_info.image_id
-  instance_type = var.server_info.instance_type
-  vpc_security_group_ids = [aws_security_group.altschool_sg.id, aws_security_group.elb-sg.id]
-  depends_on = [aws_autoscaling_group.ec2-asg]
-  associate_public_ip_address = true
-
-  tags = {
-    "name" = "Altschool-${count.index + 1}"
+data "aws_instances" "ec2_instances" {
+  filter {
+    name   = "tag:aws:autoscaling:groupName"
+    values = [aws_autoscaling_group.ec2-asg.name]
   }
 }
 
@@ -28,48 +22,37 @@ resource "aws_autoscaling_group" "ec2-asg" {
   desired_capacity = 3
   min_size = 3
   max_size = 3
-
-  availability_zones = var.availability_zones
+  vpc_zone_identifier = [for subnet in aws_subnet.az : subnet.id]
   target_group_arns = [aws_alb_target_group.tg.arn]
+  # security_groups    = [aws_security_group.altschool_sg.id, aws_security_group.elb-sg.id]
 
   launch_template {
     id      = aws_launch_template.ec2-launch_temp.id
     version = "$Latest"
   }
 
+  timeouts {
+    delete = "15m"
+  }
+
   tag {
     key                 = "Name"
-    value               = "altschool-tf-asg"
+    value               = "ec2-${1}"
     propagate_at_launch = true
   }
 }
 
+data "template_file" "inventory_file" {
+  template = "{{ range $i, $instance := .Instances -}}{{ $instance.PublicIP }} ansible_host={{ $instance.PublicIP }} ansible_user=ubuntu\n{{- end }}"
 
-resource "null_resource" "provision_instance" {
-  count = length(var.availability_zones)
-
-  #depends_on = [
-  # aws_instance.new_instance,
-  #]
-  provisioner "remote-exec" {
-    inline = [
-      "echo 'ssh connected'"
-    ]
-    connection {
-      type        = "ssh"
-      host        = aws_instance.new_instance[count.index].public_ip
-      user        = "ubuntu"
-      private_key = file("altschool-1.pem")
-    }
-  }
-
-  provisioner "local-exec" {
-    command = "echo ${aws_instance.new_instance[count.index].public_ip} >> /ansible/inventory && ansible-playbook -i /ansible/inventory --private-key ${var.private_key_path} /ansible/site.yml"
-
-
-    #"ansible-playbook -i ${aws_instance.new_instance[count.index].public_ip}, --private-key ${var.private_key_path} site.yml"
-
-    #"echo ${aws_instance.new_instance[count.index].public_ip} >> inventory && ansible-playbook -i #inventory site.yml"
-    #only    = var.provision_instance == true
+  vars = {
+    Instances = [for instance in data.aws_instances.ec2_instances: instance.public_ip if instance.public_ip != null]
   }
 }
+
+resource "null_resource" "write_inventory_file" {
+  provisioner "local-exec" {
+    command = "echo -e ${data.template_file.inventory_file.rendered} >> ./ansible/inventory && ansible-playbook -i ./ansible/inventory --private-key ${var.private_key_path} /ansible/site.yml"
+  }
+}
+

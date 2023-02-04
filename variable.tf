@@ -49,6 +49,11 @@ variable "inbound_ports" {
   default = [80, 443, 22]
 }
 
+variable "x" {
+  type = number
+  default = 0
+}
+
 variable "provision_instance" {
   type        = bool
   default     = true

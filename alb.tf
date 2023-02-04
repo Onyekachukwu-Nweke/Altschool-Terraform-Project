@@ -7,7 +7,7 @@ resource "aws_alb" "new_alb" {
 }
 
 resource "aws_alb_target_group" "tg" {
-  name     = "TargetGroup"
+  name     = "AlbTargetGroup"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
@@ -34,11 +34,9 @@ resource "aws_alb_listener" "new_listener" {
   }
 }
 
-resource "aws_alb_target_group_attachment" "tg_attachment" {
-  count = length(aws_instance.new_instance)
-  target_group_arn = aws_alb_target_group.tg.arn
-  target_id        = aws_instance.new_instance[count.index].id
-  port             = 80
+resource "aws_autoscaling_attachment" "asg_attachment" {
+  autoscaling_group_name = aws_autoscaling_group.ec2-asg.id
+  elb                    = aws_alb.new_alb.id
 }
 
 output "alb_dns_name" {
