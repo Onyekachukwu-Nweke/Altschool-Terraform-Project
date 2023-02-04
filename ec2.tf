@@ -59,7 +59,7 @@ resource "null_resource" "provision_instance" {
       type        = "ssh"
       host        = aws_instance.new_instance[count.index].public_ip
       user        = "ubuntu"
-      private_key = file("~/.ssh/altschool-1.pem")
+      private_key = file("altschool-1.pem")
     }
   }
 
