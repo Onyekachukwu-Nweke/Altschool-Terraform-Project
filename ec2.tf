@@ -55,14 +55,14 @@ resource "null_resource" "provision_instance" {
     ]
     connection {
       type        = "ssh"
-      host        = aws_autoscaling_group.ec2-asg[count.index].public_ip
+      host        = aws_instance.new_instance[count.index].public_ip
       user        = "ubuntu"
       private_key = file("~/.ssh/altschool-1.pem")
     }
   }
 
   provisioner "local-exec" {
-    command = "echo ${aws_autoscaling_group.ec2-asg[count.index].public_ip} >> inventory && ansible-playbook -i inventory --private-key ${var.private_key_path} site.yml"
+    command = "echo ${aws_instance.new_instance[count.index].public_ip} >> /ansible/inventory && ansible-playbook -i inventory --private-key ${var.private_key_path} site.yml"
 
 
     #"ansible-playbook -i ${aws_instance.new_instance[count.index].public_ip}, --private-key ${var.private_key_path} site.yml"
