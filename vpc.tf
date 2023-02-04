@@ -37,6 +37,8 @@ resource "aws_subnet" "az" {
   # each subnet, using consecutive addresses for each availability zone,
   # such as 10.1.16.0/20 .
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index + 1)
+
+  map_public_ip_on_launch = true
 }
 
 resource "aws_route_table" "route_table" {

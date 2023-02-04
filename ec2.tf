@@ -3,8 +3,9 @@ resource "aws_instance" "new_instance" {
   count  = aws_autoscaling_group.ec2-asg.desired_capacity
   ami = var.server_info.image_id
   instance_type = var.server_info.instance_type
-  vpc_security_group_ids = [aws_security_group.altschool_sg.id]
+  vpc_security_group_ids = [aws_security_group.altschool_sg.id, aws_security_group.elb-sg.id]
   depends_on = [aws_autoscaling_group.ec2-asg]
+  associate_public_ip_address = true
 
   tags = {
     "name" = "Altschool-${count.index + 1}"
@@ -28,7 +29,8 @@ resource "aws_autoscaling_group" "ec2-asg" {
   min_size = 3
   max_size = 3
 
-   target_group_arns = [aws_alb_target_group.tg.arn]
+  availability_zones = var.availability_zones
+  target_group_arns = [aws_alb_target_group.tg.arn]
 
   launch_template {
     id      = aws_launch_template.ec2-launch_temp.id
@@ -62,7 +64,7 @@ resource "null_resource" "provision_instance" {
   }
 
   provisioner "local-exec" {
-    command = "echo ${aws_instance.new_instance[count.index].public_ip} >> /ansible/inventory && ansible-playbook -i inventory --private-key ${var.private_key_path} site.yml"
+    command = "echo ${aws_instance.new_instance[count.index].public_ip} >> /ansible/inventory && ansible-playbook -i /ansible/inventory --private-key ${var.private_key_path} /ansible/site.yml"
 
 
     #"ansible-playbook -i ${aws_instance.new_instance[count.index].public_ip}, --private-key ${var.private_key_path} site.yml"

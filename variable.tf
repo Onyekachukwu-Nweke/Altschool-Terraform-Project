@@ -4,9 +4,19 @@ variable "base_cidr_block" {
 }
 
 variable "aws_region" {
+  type = string
   description = "This defines the deployment region"
   default     = "us-east-1"
 }
+
+variable "aws_access_key" {
+  type = string
+}
+
+variable "aws_secret_key" {
+  type = string
+}
+
 
 variable "availability_zones" {
   description = "A list of availability zones in which to create subnets"
@@ -30,7 +40,7 @@ variable "server_info" {
   default = {
     image_id      = "ami-06878d265978313ca"
     instance_type = "t2.micro"
-    key_name      = ""
+    key_name      = "altschool-1"
   }
 }
 
@@ -46,5 +56,5 @@ variable "provision_instance" {
 }
 
 variable "private_key_path" {
-  default = ""
+  default = "~/.ssh/altschool-1.pem"
 }

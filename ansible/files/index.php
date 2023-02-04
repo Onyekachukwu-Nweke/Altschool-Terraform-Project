@@ -17,7 +17,7 @@
 <body>
 
     <div id="wrapper">
-        <h1 id="pageTitle">AWS Server Information</h1>
+        <h1 id="pageTitle">Onyeka's AWS Server Information</h1>
         <div class="twoColRow">
             <div class="serverStats">
                 <img src="./assets/server.png" alt="" class="icon">
