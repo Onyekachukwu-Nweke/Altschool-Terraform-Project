@@ -3,6 +3,7 @@
 .terraform.lock.hcl
 
 *.pem
+*.sh
 
 # Local .terraform directories
 **/.terraform/*
