@@ -13,3 +13,7 @@ resource "aws_route53_record" "terraform-test_record" {
     evaluate_target_health = true
   }
 }
+
+output "subdomain" {
+  value = aws_route53_record.terraform-test_record.name
+}

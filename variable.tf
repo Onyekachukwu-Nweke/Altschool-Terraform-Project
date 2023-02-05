@@ -55,9 +55,14 @@ variable "x" {
 }
 
 variable "private_key_path" {
-  default = "altschool-1.pem"
+  default = "~/.ssh/altschool-1.pem"
 }
 
 variable "domain_name" {
   default = "onyekachukwuejiofornweke.me"
+}
+
+variable "arn" {
+  type = string
+  default = ""
 }

@@ -57,7 +57,7 @@ resource "local_file" "instanceIPs" {
 
 resource "null_resource" "write_inventory_file" {
   provisioner "local-exec" {
-    command = "ansible-playbook -i inventory.txt --private-key ${var.private_key_path} site.yml"
+    command = "ansible-playbook -i inventory.txt --private-key ${var.private_key_path} site.yml --ssh-common-args='-o StrictHostKeyChecking=no'"
     working_dir = "ansible/"
   }
 
