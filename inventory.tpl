@@ -1,1 +1,0 @@
-"{{ range $i, $instance := .Instances -}}\n{{ $instance.public_ip }} ansible_host={{ $instance.public_ip }} ansible_user=ubuntu\n{{- end }}"

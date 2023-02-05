@@ -1,5 +1,6 @@
 
 data "aws_instances" "ec2_instances" {
+  instance_state_names = ["running"]
   filter {
     name   = "tag:aws:autoscaling:groupName"
     values = [aws_autoscaling_group.ec2-asg.name]
@@ -11,7 +12,7 @@ resource "aws_launch_template" "ec2-launch_temp" {
   image_id      = var.server_info.image_id
   instance_type = var.server_info.instance_type
   key_name      = var.server_info.key_name
-
+  vpc_security_group_ids = [aws_security_group.altschool_sg.id, aws_security_group.elb-sg.id]
   tags = {
     Name = "ec2-launch_temp"
   }
@@ -45,24 +46,24 @@ resource "aws_autoscaling_group" "ec2-asg" {
   }
 }
 
-locals {
-  instances = flatten([for instance in data.aws_instances.ec2_instances : instance if instance != null])
-}
+# locals {
+#   instances = flatten([for instance in data.aws_instances.ec2_instances.public_ips : instance if instance != null])
+# }
 
-data "template_file" "inventory_file" {
-  template = "${templatefile("inventory.tpl", { Instances = jsonencode(local.instances) } )}"
-  depends_on = [data.aws_instances.ec2_instances]
+resource "local_file" "instanceIPs" {
+  filename = "./ansible/inventory.txt"
+  content = join("\n", data.aws_instances.ec2_instances.public_ips)
 }
 
 resource "null_resource" "write_inventory_file" {
   provisioner "local-exec" {
-    command = "echo ${data.template_file.inventory_file.rendered} >> ./ansible/inventory.txt && ansible-playbook -i ./ansible/inventory.txt --private-key ${var.private_key_path} ./ansible/site.yml"
+    command = "ansible-playbook -i ./ansible/inventory.txt --private-key ${var.private_key_path} ./ansible/site.yml"
   }
 
   depends_on = [data.aws_instances.ec2_instances]
 }
 
 
-output "inventory" {
-  value = "${local.instances}"
-}
+# output "inventory" {
+#   value = 
+# }

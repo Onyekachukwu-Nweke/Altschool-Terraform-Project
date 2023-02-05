@@ -2,6 +2,8 @@ resource "aws_security_group" "altschool_sg" {
   name        = "altschool_sg"
   description = "Allow TLS inbound traffic"
 
+  vpc_id = aws_vpc.main.id
+
   dynamic "ingress" {
     for_each = var.inbound_ports
     content {

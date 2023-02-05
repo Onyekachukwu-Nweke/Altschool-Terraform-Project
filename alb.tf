@@ -35,10 +35,10 @@ resource "aws_alb_listener" "new_listener" {
   }
 }
 
-resource "aws_autoscaling_attachment" "asg_attachment" {
-  autoscaling_group_name = aws_autoscaling_group.ec2-asg.id
-  elb                    = aws_alb.new_alb.id
-}
+# resource "aws_autoscaling_attachment" "asg_attachment" {
+#   autoscaling_group_name = aws_autoscaling_group.ec2-asg.id
+#   elb                    = aws_alb.new_alb.id
+# }
 
 output "alb_dns_name" {
   value = aws_alb.new_alb.dns_name
