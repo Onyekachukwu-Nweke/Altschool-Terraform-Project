@@ -24,11 +24,14 @@ resource "aws_autoscaling_group" "ec2-asg" {
   max_size = 3
   vpc_zone_identifier = [for subnet in aws_subnet.az : subnet.id]
   target_group_arns = [aws_alb_target_group.tg.arn]
-  # security_groups    = [aws_security_group.altschool_sg.id, aws_security_group.elb-sg.id]
-
+  
   launch_template {
     id      = aws_launch_template.ec2-launch_temp.id
     version = "$Latest"
+  }
+
+   lifecycle {
+    ignore_changes = [load_balancers, target_group_arns]
   }
 
   timeouts {
@@ -47,16 +50,19 @@ locals {
 }
 
 data "template_file" "inventory_file" {
-  template = "{{ range $i, $instance := .Instances -}}{{ $instance.PublicIP }} ansible_host={{ $instance.PublicIP }} ansible_user=ubuntu\n{{- end }}"
-
-  vars = {
-    Instances = jsonencode(local.instances)
-  }
+  template = "${templatefile("inventory.tpl", { Instances = jsonencode(local.instances) } )}"
+  depends_on = [data.aws_instances.ec2_instances]
 }
 
 resource "null_resource" "write_inventory_file" {
   provisioner "local-exec" {
-    command = "echo -e ${data.template_file.inventory_file.rendered} >> ./ansible/inventory && ansible-playbook -i ./ansible/inventory --private-key ${var.private_key_path} /ansible/site.yml"
+    command = "echo ${data.template_file.inventory_file.rendered} >> ./ansible/inventory.txt && ansible-playbook -i ./ansible/inventory.txt --private-key ${var.private_key_path} ./ansible/site.yml"
   }
+
+  depends_on = [data.aws_instances.ec2_instances]
 }
 
+
+output "inventory" {
+  value = "${local.instances}"
+}

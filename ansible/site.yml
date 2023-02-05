@@ -42,13 +42,13 @@
         mode: 0755
 
     - name: Set timezone to Africa/Lagos
-      date_time:
-        timezone: Africa/Lagos
-        state: link
-      register: result
+      timezone:
+        name: Africa/Lagos
+
     - name: Check timezone
       command: timedatectl status
       register: time_status
+
     - name: Display timezone
       debug:
         var: time_status.stdout_lines

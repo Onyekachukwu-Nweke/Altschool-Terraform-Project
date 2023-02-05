@@ -20,8 +20,9 @@ resource "aws_alb_target_group" "tg" {
     port                = "traffic-port"
     protocol            = "HTTP"
     timeout             = 3
-    unhealthy_threshold = 3
+    unhealthy_threshold = 2
   }
+
 }
 
 resource "aws_alb_listener" "new_listener" {
