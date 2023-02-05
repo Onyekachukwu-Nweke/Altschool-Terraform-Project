@@ -57,7 +57,8 @@ resource "local_file" "instanceIPs" {
 
 resource "null_resource" "write_inventory_file" {
   provisioner "local-exec" {
-    command = "ansible-playbook -i ./ansible/inventory.txt --private-key ${var.private_key_path} ./ansible/site.yml"
+    command = "ansible-playbook -i inventory.txt --private-key ${var.private_key_path} site.yml"
+    working_dir = "ansible/"
   }
 
   depends_on = [data.aws_instances.ec2_instances]

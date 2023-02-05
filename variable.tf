@@ -54,12 +54,10 @@ variable "x" {
   default = 0
 }
 
-variable "provision_instance" {
-  type        = bool
-  default     = true
-  description = "Flag to control whether to run the Ansible playbook on the instance"
-}
-
 variable "private_key_path" {
   default = "altschool-1.pem"
+}
+
+variable "domain_name" {
+  default = "onyekachukwuejiofornweke.me"
 }

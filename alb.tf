@@ -27,18 +27,32 @@ resource "aws_alb_target_group" "tg" {
 
 resource "aws_alb_listener" "new_listener" {
   load_balancer_arn = aws_alb.new_alb.arn
-  port              = "80"
-  protocol          = "HTTP"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = "${data.aws_acmpca_certificate.ssl_cert.arn}"
   default_action {
     target_group_arn = aws_alb_target_group.tg.arn
     type             = "forward"
   }
 }
 
-# resource "aws_autoscaling_attachment" "asg_attachment" {
-#   autoscaling_group_name = aws_autoscaling_group.ec2-asg.id
-#   elb                    = aws_alb.new_alb.id
-# }
+resource "aws_alb_listener" "http_to_https" {
+  load_balancer_arn = aws_alb.new_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+  default_action {
+    target_group_arn = aws_alb_target_group.tg.arn
+    type             = "redirect"
+
+    redirect {
+      port = "443"
+      protocol = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
 
 output "alb_dns_name" {
   value = aws_alb.new_alb.dns_name
